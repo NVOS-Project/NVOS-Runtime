@@ -1,0 +1,25 @@
+<linker>
+  <!-- NVOS dependencies that should not be stripped !-->
+  <assembly fullname="Autofac" preserve="all"/>
+  <assembly fullname="CircularBuffer" preserve="all"/>
+  <assembly fullname="EntityFramework" preserve="all"/>
+  <assembly fullname="EntityFramework.SqlServer" preserve="all"/>
+  <assembly fullname="LiteDB" preserve="all"/>
+  <assembly fullname="Microsoft.Bcl.AsyncInterfaces" preserve="all"/>
+  <assembly fullname="Newtonsoft.Json" preserve="all"/>
+  <assembly fullname="QuikGraph" preserve="all"/>
+  <assembly fullname="System.Buffers" preserve="all"/>
+  <assembly fullname="System.Diagnostics.DiagnosticSource" preserve="all"/>
+  <assembly fullname="System.Memory" preserve="all"/>
+  <assembly fullname="System.Numerics.Vectors" preserve="all"/>
+  <assembly fullname="System.Runtime.CompilerServices.Unsafe" preserve="all"/>
+  <assembly fullname="System.Threading.Tasks.Extensions" preserve="all"/>
+  <assembly fullname="System.Core" preserve="all"/>
+  <!-- Don't strip the NVOS.Core library either, it's very useful !-->
+  <assembly fullname="NVOS.Core" preserve="all"/>
+  <!-- Add any NVOS modules down here !-->
+  <assembly fullname="NVOS.UI" preserve="all"/>
+  <assembly fullname="NVOS.Network" preserve="all"/>
+  <assembly fullname="NVOS.LED" preserve="all"/>
+  <assembly fullname="NVOS.Unity" preserve="all"/>
+</linker>
