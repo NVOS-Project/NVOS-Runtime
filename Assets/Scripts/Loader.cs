@@ -116,8 +116,18 @@ public class Loader
                 logger.Info($"Assembly: {assembly.GetName().Name}");
                 logger.Info(new string('-', 30));
 
-                mm.Load(assembly);
-                logger.Info("Module load OK");
+                if (!mm.IsLoaded(assembly))
+                {
+                    logger.Info("Module is not loaded, inserting.");
+                    mm.Load(assembly);
+                    logger.Info("Module load OK");
+                    
+                }
+                else
+                {
+                    logger.Info("Module is already loaded, nothing to do.");
+                }
+
                 logger.Info("");
             }
             catch(Exception ex)
