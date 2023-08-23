@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using NVOS.Core.Modules;
 using NVOS.Core.Modules.Extensions;
+using NVOS.Core.Services.Enums;
 
 public class Loader
 {
@@ -19,23 +20,31 @@ public class Loader
     static void Init()
     {
         // Disable pesky unity logging
+        Application.unloading += Unload;
         Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
         Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
 
         Debug.Log("===== Loading NVOS =====");
         try
         {
-            string data_path = Application.persistentDataPath;
-            Debug.Log($"Persistent data path is {data_path}");
-            Directory.SetCurrentDirectory(data_path);
+            if (!Application.isEditor)
+            {
+                string data_path = Application.persistentDataPath;
+                Debug.Log($"Persistent data path is {data_path}");
+                Directory.SetCurrentDirectory(data_path);
 
-            Debug.Log($"Preparing NVOS root directory at {Path.GetFullPath(NVOS_ROOT_PATH)}");
-            Directory.CreateDirectory(NVOS_ROOT_PATH);
+                Debug.Log($"Preparing NVOS root directory at {Path.GetFullPath(NVOS_ROOT_PATH)}");
+                Directory.CreateDirectory(NVOS_ROOT_PATH);
 
-            Debug.Log("Setting working directory");
-            Directory.SetCurrentDirectory(NVOS_ROOT_PATH);
+                Debug.Log("Setting working directory");
+                Directory.SetCurrentDirectory(NVOS_ROOT_PATH);
 
-            Debug.Log("NVOS root directory OK");
+                Debug.Log("NVOS root directory OK");
+            }
+            else
+            {
+                Debug.Log("Not switching working directory because we're running in the editor");
+            }
         }
         catch (Exception ex)
         {
@@ -96,7 +105,7 @@ public class Loader
             return;
         }
 
-        foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             if (!assembly.HasModuleManifest())
             {
@@ -121,7 +130,7 @@ public class Loader
                     logger.Info("Module is not loaded, inserting.");
                     mm.Load(assembly);
                     logger.Info("Module load OK");
-                    
+
                 }
                 else
                 {
@@ -130,13 +139,64 @@ public class Loader
 
                 logger.Info("");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Info($"Failed to load module {assembly.GetName().Name}: {ex}");
             }
         }
 
         Debug.Log("===== NVOS loader finished =====");
+    }
+
+    private static void Unload()
+    {
+        // There is currently no standard way to shut down services on exit
+        // do it manually
+        IServiceManager sm = ServiceLocator.Resolve<ServiceManager>();
+        IModuleManager mm = ServiceLocator.Resolve<IModuleManager>();
+        NVOS.Core.Logger.ILogger logger = ServiceLocator.Resolve<NVOS.Core.Logger.ILogger>();
+
+        logger.Info("Starting shutdown!");
+        logger.Info("Unloading modules");
+        foreach (KeyValuePair<Assembly, IModule> kvp in mm.GetLoadedModules().ToList())
+        {
+            try
+            {
+                mm.Unload(kvp.Key);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn($"Failed to unload module {kvp.Value.Name}: {ex}");
+            }
+        }
+
+        logger.Info("Unloading stray services");
+        foreach (Type service in sm.GetRegisteredTypes())
+        {
+            try
+            {
+                if (sm.GetServiceState(service) == ServiceState.Running)
+                    sm.Stop(service);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn($"Failed to shut down service: {ex}");
+            }
+        }
+
+        foreach (Type service in sm.GetRegisteredTypes().ToList())
+        {
+            try
+            {
+                sm.Unregister(service);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn($"Failed to unregister service {service.FullName}: {ex}");
+            }
+        }
+
+        logger.Info("Shutdown complete");
     }
 
     private static void Logger_OnLog(object sender, NVOS.Core.Logger.EventArgs.LogEventArgs e)
