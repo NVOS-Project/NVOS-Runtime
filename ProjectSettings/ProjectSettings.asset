@@ -259,7 +259,7 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: U:/szymon/source/repos/NVOS-Runtime/nvos.keystore
+  AndroidKeystoreName: '{inproject}: nvos.keystore'
   AndroidKeyaliasName: nvos
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidBuildApkPerCpuArchitecture: 0

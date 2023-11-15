@@ -22,4 +22,5 @@
   <assembly fullname="NVOS.Network" preserve="all"/>
   <assembly fullname="NVOS.LED" preserve="all"/>
   <assembly fullname="NVOS.Unity" preserve="all"/>
+  <assembly fullname="NVOS.SystemTools" preserve="all"/>
 </linker>
